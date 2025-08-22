@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>블루펜슬의 영화 감상 후기</title>
+    <meta name="description" content="영화 후기 저장소">
+    <meta property="og:title" content="블루펜슬의 영화 감상 후기">
+    <meta property="og:description" content="영화 후기 저장소">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="블루펜슬의 영화 감상 후기">
+    <meta name="twitter:description" content="영화 후기 저장소">
+    <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <div class="header-title">
+                <h1>블루펜슬의 영화 감상 후기</h1>
+                <p>개인적인 후기와 감상입니다.</p>
+            </div>
+            <img src="https://avatars.githubusercontent.com/u/20738199?v=4" alt="개인 로고" class="header-logo">
+        </header>
+
+        <section class="controls">
+            <input type="search" id="search-box" placeholder="검색">
+            <button id="filter-btn">필터</button>
+        </section>
+        
+        <section id="filter-panel">
+            <div class="filter-group">
+                <label>별점 범위</label>
+                <div class="range-slider-container">
+                    <div class="range-slider-track"></div>
+                    <div class="range-slider-fill"></div>
+                    <input type="range" id="min-rating-slider" min="0" max="5" step="0.5" value="0">
+                    <input type="range" id="max-rating-slider" min="0" max="5" step="0.5" value="5">
+                </div>
+                <div class="range-slider-values">
+                    <span id="min-rating-value">0.0</span>
+                    <span id="max-rating-value">5.0</span>
+                </div>
+            </div>
+            <div class="filter-group" id="genre-filter">
+                <label>장르</label>
+                <div id="genre-filter-options"></div>
+            </div>
+        </section>
+
+        <main>
+            <section id="spotlight-container">
+                <h2 class="section-title">최신 후기</h2>
+                <div id="spotlight-content"></div>
+            </section>
+            
+            <h2 class="section-title">전체 후기</h2>
+            <section id="reviews-container">
+                </section>
+
+            <div id="message-container"></div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const reviewsContainer = document.getElementById('reviews-container');
+            const spotlightContainer = document.getElementById('spotlight-content');
+            const messageContainer = document.getElementById('message-container');
+            const searchBox = document.getElementById('search-box');
+            const filterBtn = document.getElementById('filter-btn');
+            const filterPanel = document.getElementById('filter-panel');
+            const minRatingSlider = document.getElementById('min-rating-slider');
+            const maxRatingSlider = document.getElementById('max-rating-slider');
+            const minRatingValueSpan = document.getElementById('min-rating-value');
+            const maxRatingValueSpan = document.getElementById('max-rating-value');
+            const rangeFill = document.querySelector('.range-slider-fill');
+            const genreFilterOptions = document.getElementById('genre-filter-options');
+
+            const REVIEWS_PER_PAGE = 10;
+            let allReviews = [], displayedReviews = [], currentPage = 1, isLoading = false;
+
+            async function initialize() {
+                try {
+                    const response = await fetch('reviews.yaml');
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const yamlText = await response.text();
+                    const data = jsyaml.load(yamlText) || [];
+                    
+                    allReviews = data.sort((a, b) => new Date(b.viewingDate) - new Date(a.viewingDate));
+                    displayedReviews = [...allReviews];
+                    
+                    updateRangeFill();
+                    populateGenreFilter();
+                    renderPage();
+                } catch (error) {
+                    console.error('로딩 실패:', error);
+                    messageContainer.textContent = '후기 로딩을 실패했습니다.';
+                }
+            }
+
+            function createReviewCardHTML(review) {
+                const isLongText = review.reviewText.length > 150;
+                const initialTextClass = isLongText ? 'truncated' : '';
+                const toggleButtonHTML = isLongText ? '<button class="toggle-view-btn">더보기</button>' : '';
+                const details = review.rating.details;
+
+                return `
+                    <article class="review-card">
+                        <div class="review-card-body">
+                            <div class="review-poster">
+                                <img src="${review.posterUrl}" alt="${review.title} 포스터">
+                            </div>
+                            <div class="review-content">
+                                <h3>${review.title}</h3>
+                                <div class="review-meta">
+                                    <div class="review-rating" role="button" tabindex="0">⭐ ${review.rating.main.toFixed(1)}</div>
+                                    <span>|</span><span>개봉일: ${review.releaseDate}</span><span>|</span><span>감상일: ${review.viewingDate}</span>
+                                </div>
+                                <div class="detailed-ratings">
+                                    <ul>
+                                        <li><span>시나리오</span> <span>${details.scenario.toFixed(1)}</span></li>
+                                        <li><span>연출</span> <span>${details.direction.toFixed(1)}</span></li>
+                                        <li><span>연기</span> <span>${details.acting.toFixed(1)}</span></li>
+                                        <li><span>영상</span> <span>${details.visuals.toFixed(1)}</span></li>
+                                        <li><span>음향</span> <span>${details.sound.toFixed(1)}</span></li>
+                                    </ul>
+                                </div>
+                                <div class="genre-tags">
+                                    ${review.genres.map(genre => `<span class="genre-tag">${genre}</span>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="review-text-wrapper">
+                            <p class="review-text ${initialTextClass}">${review.reviewText}</p>
+                            ${toggleButtonHTML}
+                        </div>
+                    </article>`;
+            }
+            
+            function renderPage() {
+                renderSpotlight();
+                renderReviews();
+            }
+            
+            function renderSpotlight() {
+                spotlightContainer.innerHTML = '';
+                if (displayedReviews.length > 0) {
+                    spotlightContainer.innerHTML = createReviewCardHTML(displayedReviews[0]);
+                    document.querySelector('#spotlight-container').style.display = 'block';
+                } else {
+                    document.querySelector('#spotlight-container').style.display = 'none';
+                }
+            }
+
+            function renderReviews(append = false) {
+                if (!append) { reviewsContainer.innerHTML = ''; currentPage = 1; }
+                const reviewsToList = displayedReviews.slice(1);
+                const pageReviews = reviewsToList.slice((currentPage - 1) * REVIEWS_PER_PAGE, currentPage * REVIEWS_PER_PAGE);
+                messageContainer.textContent = (pageReviews.length === 0 && !append) ? '표시할 후기가 없습니다.' : '';
+                pageReviews.forEach(review => reviewsContainer.insertAdjacentHTML('beforeend', createReviewCardHTML(review)));
+                isLoading = false;
+            }
+
+            function applyFilters() {
+                const searchTerm = searchBox.value.toLowerCase();
+                const minRating = parseFloat(minRatingSlider.value);
+                const maxRating = parseFloat(maxRatingSlider.value);
+                const selectedGenres = [...genreFilterOptions.querySelectorAll('input:checked')].map(el => el.value);
+
+                displayedReviews = allReviews.filter(review => {
+                    const matchesSearch = searchTerm ? review.title.toLowerCase().includes(searchTerm) || review.reviewText.toLowerCase().includes(searchTerm) : true;
+                    const matchesRating = review.rating.main >= minRating && review.rating.main <= maxRating;
+                    const matchesGenres = selectedGenres.length > 0 ? selectedGenres.every(genre => review.genres.includes(genre)) : true;
+                    return matchesSearch && matchesRating && matchesGenres;
+                });
+                renderPage();
+            }
+            
+            function populateGenreFilter() {
+                const allGenres = [...new Set(allReviews.flatMap(r => r.genres))].sort();
+                genreFilterOptions.innerHTML = '';
+                allGenres.forEach(genre => genreFilterOptions.insertAdjacentHTML('beforeend', `<label><input type="checkbox" value="${genre}"> ${genre}</label>`));
+            }
+
+            function updateRangeFill() {
+                const min = parseFloat(minRatingSlider.value);
+                const max = parseFloat(maxRatingSlider.value);
+                const range = parseFloat(minRatingSlider.max) - parseFloat(minRatingSlider.min);
+                const left = ((min - minRatingSlider.min) / range) * 100;
+                const width = ((max - min) / range) * 100;
+                rangeFill.style.left = `${left}%`;
+                rangeFill.style.width = `${width}%`;
+            }
+
+            searchBox.addEventListener('input', applyFilters);
+            filterBtn.addEventListener('click', () => filterPanel.style.display = filterPanel.style.display === 'block' ? 'none' : 'block');
+            genreFilterOptions.addEventListener('change', applyFilters);
+
+            minRatingSlider.addEventListener('input', () => {
+                const min = parseFloat(minRatingSlider.value);
+                const max = parseFloat(maxRatingSlider.value);
+                if (min > max) { minRatingSlider.value = max; }
+                minRatingValueSpan.textContent = parseFloat(minRatingSlider.value).toFixed(1);
+                updateRangeFill();
+            });
+            maxRatingSlider.addEventListener('input', () => {
+                const min = parseFloat(minRatingSlider.value);
+                const max = parseFloat(maxRatingSlider.value);
+                if (max < min) { maxRatingSlider.value = min; }
+                maxRatingValueSpan.textContent = parseFloat(maxRatingSlider.value).toFixed(1);
+                updateRangeFill();
+            });
+            minRatingSlider.addEventListener('change', applyFilters);
+            maxRatingSlider.addEventListener('change', applyFilters);
+
+            document.body.addEventListener('click', e => {
+                if (e.target.matches('.toggle-view-btn')) {
+                    const textElement = e.target.previousElementSibling;
+                    textElement.classList.toggle('truncated');
+                    e.target.textContent = textElement.classList.contains('truncated') ? '더보기' : '접기';
+                }
+                if (e.target.matches('.review-rating')) {
+                    e.target.classList.toggle('is-open');
+                    const content = e.target.closest('.review-content');
+                    const details = content.querySelector('.detailed-ratings');
+                    if (details) details.classList.toggle('show');
+                }
+            });
+
+            window.addEventListener('scroll', () => {
+                if (isLoading) return;
+                const reviewsToList = displayedReviews.slice(1);
+                if ((currentPage * REVIEWS_PER_PAGE) >= reviewsToList.length) return;
+                if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
+                    isLoading = true;
+                    currentPage++;
+                    setTimeout(() => renderReviews(true), 300);
+                }
+            });
+
+            initialize();
+        });
+    </script>
+</body>
+</html>

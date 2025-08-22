@@ -1,0 +1,71 @@
+- title: "발레리나"
+  posterUrl: "https://image.tmdb.org/t/p/w500/f9iSnN9yiedMgjGX4wQnHk3GZpB.jpg"
+  releaseDate: "2025-08-06"
+  viewingDate: "2025-08-21"
+  rating:
+    main: 3.5
+    details:
+      scenario: 3.0
+      direction: 4.0
+      acting: 4.5
+      visuals: 4.5
+      sound: 4.0
+  reviewText: |
+   - 개연성에 대한 접근법이 좋고, 거슬리는 부분 없이 전반적인 흐름도 자연스럽다.
+   - 감독이 바뀌었지만 찰떡. 비주얼과 색감, 카메라워크는 시리즈 특징을 수렴해서 능가한 느낌. 다만 전투 방식은 훨씬 역동적으로 바뀌었다.
+   - 살짝 어이털리는 유머와 중후반 비주얼을 위한 화염쇼는 아쉬운 부분.
+  genres: ["액션", "스릴러", "범죄"]
+
+- title: "여름이 지나가면"
+  posterUrl: "https://image.tmdb.org/t/p/w500/TAqJDO79DgQCcGuPh1P2tU9DkN.jpg"
+  releaseDate: "2025-07-09"
+  viewingDate: "2025-07-12"
+  rating:
+    main: 4.0
+    details:
+      scenario: 4.5
+      direction: 4.5
+      acting: 4.5
+      visuals: 3.0
+      sound: 3.0
+  reviewText: |
+   올해 가장 인상깊은 장편 데뷔작. 자연스러움이 곧 밸런스고, 복잡하지 않게 있는 그대로 보여준다. 배우들의 연기도 놀랄 만큼 뛰어났고.
+   현실이자 침식, 무례함, 한때의 일탈, 여러 의미를 담고 있지만 기억에 남는 것은 딱 한 번 나왔던 얼굴의 클로즈업 장면과 이 대사, "뭐가 다른데요?."
+  genres: ["드라마"]
+
+- title: "F1 더 무비"
+  posterUrl: "https://image.tmdb.org/t/p/w500/bvVoP1t2gNvmE9ccSrqR1zcGHGM.jpg"
+  releaseDate: "2025-06-25"
+  viewingDate: "2025-06-26"
+  rating:
+    main: 4.0
+    details:
+      scenario: 3.0
+      direction: 3.5
+      acting: 4.5
+      visuals: 4.5
+      sound: 5.0
+  reviewText: |
+   - 이름값 한다.
+   - 감독의 전작이 떠오르는 단순명쾌한 플롯
+   - F1에 생소한 관객들을 위한 밸런스
+   - 끊임없는, 고퀄리티의 볼거리와 들을거리
+   - 포드v페라리와 함께 최근 나온 레이싱 영화 중 투톱인 듯.
+  genres: ["액션", "레이싱", "드라마"]
+
+- title: "극장판 프로젝트 세카이 : 부서진 세카이와 전해지지 않는 미쿠의 노래"
+  posterUrl: "https://image.tmdb.org/t/p/w500/ndDYIa9VXFbWpC2pWj9j5OaZsfE.jpg"
+  releaseDate: "2025-05-29"
+  viewingDate: "2025-06-12"
+  rating:
+    main: 3.5
+    details:
+      scenario: 3.0
+      direction: 3.5
+      acting: 4.0
+      visuals: 4.0
+      sound: 4.5
+  reviewText: |
+   스토리 면에서 그리 납득되는 전개라던가 유기적인 흐름은 아니지만, 프세카 플레이어라면 충분히 벅차할 만한 극장판.
+   두말할 것 없이 곡이 좋고, 작화가 대단하고, 팬들을 신경쓴 구성이 돋보인다.
+  genres: ["애니메이션", "음악", "드라마"]
